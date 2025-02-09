@@ -19,10 +19,6 @@
         "src": "/api/(.*)",
         "dest": "backend/src/$1"
       }
-    ],
-    "excludeFiles": [
-      "**/*.test.ts",
-      "**/__tests__/**"
     ]
   }
   
