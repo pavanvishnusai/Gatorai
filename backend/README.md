@@ -1,4 +1,4 @@
-
+# GatorAI
 # MERN Stack AI Chatbot
 
 This is an AI Chatbot application, inspired by ChatGPT, by using MERN Stack and OpenAI
@@ -9,3 +9,4 @@ It's a completely secure application using JWT Tokens, HTTP-Only Cookies, Signed
 
 Contributions are welcome
 
+This Project is created by Pavan Vishnu Sai Bestha
