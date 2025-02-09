@@ -1,8 +1,8 @@
-import React from 'react'
+
 
 function notFound() {
   return (
-    <div>notFound</div>
+    <div>Not Found</div>
   )
 }
 

@@ -5,7 +5,7 @@ import {IoIosLogIn} from "react-icons/io"
 import { toast } from 'react-hot-toast'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom';
-import Footer from '../components/footer/footer'
+
 
 const login = () => {
   const navigate = useNavigate();

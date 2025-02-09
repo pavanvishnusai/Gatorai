@@ -7,7 +7,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { deleteUserChats, getUserChats, sendChatRequest } from '../helpers/api-communicator';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import Footer from '../components/footer/footer';
+
 
 type Message = {
   content: string;
