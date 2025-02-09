@@ -1,0 +1,28 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "backend/src/index.ts",
+        "use": "@vercel/node"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/api/users/(.*)",
+        "dest": "backend/src/routes/user-routes.ts"
+      },
+      {
+        "src": "/api/chats/(.*)",
+        "dest": "backend/src/routes/chats-routes.ts"
+      },
+      {
+        "src": "/api/(.*)",
+        "dest": "backend/src/$1"
+      }
+    ],
+    "excludeFiles": [
+      "**/*.test.ts",
+      "**/__tests__/**"
+    ]
+  }
+  
