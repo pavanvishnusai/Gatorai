@@ -3,6 +3,10 @@ import User from "../models/User.js";
 import { createToken } from "../utils/token-manager.js";
 import { COOKIE_NAME } from "../utils/constants.js";
 import mongoose from "mongoose";
+// Determine environment (Render vs Local)
+const isProduction = process.env.NODE_ENV === "production";
+const sameSiteMode = isProduction ? "none" : "lax";
+const secureFlag = isProduction ? true : false;
 // ✅ Get all users
 export const getAllUsers = async (req, res, next) => {
     try {
@@ -10,7 +14,7 @@ export const getAllUsers = async (req, res, next) => {
         return res.status(200).json({ message: "ok", users });
     }
     catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ message: "ERROR", cause: error.message });
     }
 };
@@ -25,29 +29,29 @@ export const userSignup = async (req, res, next) => {
         const hashedPassword = await hash(password, 10);
         const user = new User({ name, email, password: hashedPassword });
         await user.save();
-        // ✅ Clear any existing cookie first
+        // ✅ Clear any existing cookie
         res.clearCookie(COOKIE_NAME, {
             httpOnly: true,
-            sameSite: "none",
-            secure: true,
+            sameSite: sameSiteMode,
+            secure: secureFlag,
             path: "/",
         });
         // ✅ Create JWT token
         const token = createToken(user._id.toString(), user.email, "7d");
         const expires = new Date();
         expires.setDate(expires.getDate() + 7);
-        // ✅ Set secure cookie (Render HTTPS)
+        // ✅ Set cookie with correct flags for environment
         res.cookie(COOKIE_NAME, token, {
             httpOnly: true,
-            sameSite: "none",
-            secure: true,
+            sameSite: sameSiteMode,
+            secure: secureFlag,
             path: "/",
             expires,
         });
         return res.status(201).json({ message: "ok", name: user.name });
     }
     catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ message: "ERROR", cause: error.message });
     }
 };
@@ -66,8 +70,8 @@ export const userLogin = async (req, res, next) => {
         // ✅ Clear old cookie
         res.clearCookie(COOKIE_NAME, {
             httpOnly: true,
-            sameSite: "none",
-            secure: true,
+            sameSite: sameSiteMode,
+            secure: secureFlag,
             path: "/",
         });
         // ✅ Create new JWT token
@@ -77,15 +81,15 @@ export const userLogin = async (req, res, next) => {
         // ✅ Set secure cookie
         res.cookie(COOKIE_NAME, token, {
             httpOnly: true,
-            sameSite: "none",
-            secure: true,
+            sameSite: sameSiteMode,
+            secure: secureFlag,
             path: "/",
             expires,
         });
         return res.status(200).json({ message: "ok", name: user.name, email: user.email });
     }
     catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ message: "ERROR", cause: error.message });
     }
 };
@@ -106,35 +110,33 @@ export const verifyUser = async (req, res, next) => {
         return res.status(200).json({ message: "ok", name: user.name, email: user.email });
     }
     catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ message: "ERROR", cause: error.message });
     }
 };
 // ✅ Logout
 export const userLogout = async (req, res, next) => {
     try {
-        const userId = res.locals.jwtData.id;
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
+        const userId = res.locals.jwtData?.id;
+        // No token / invalid token scenario
+        if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
             return res.status(400).json({ message: "Invalid user ID" });
         }
         const user = await User.findById(userId);
         if (!user) {
             return res.status(401).json({ message: "User not registered or Token malfunctioned" });
         }
-        if (user._id.toString() !== userId) {
-            return res.status(401).json({ message: "Permission didn't match" });
-        }
-        // ✅ Clear secure cookie
+        // ✅ Clear cookie correctly
         res.clearCookie(COOKIE_NAME, {
             httpOnly: true,
-            sameSite: "none",
-            secure: true,
+            sameSite: sameSiteMode,
+            secure: secureFlag,
             path: "/",
         });
-        return res.status(200).json({ message: "ok", name: user.name, email: user.email });
+        return res.status(200).json({ message: "Logout successful" });
     }
     catch (error) {
-        console.log(error);
+        console.error(error);
         return res.status(500).json({ message: "ERROR", cause: error.message });
     }
 };
