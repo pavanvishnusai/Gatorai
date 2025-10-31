@@ -7,7 +7,7 @@ import cors from "cors";
 config();
 
 const app = express();
-const allowedOrigins = [process.env.FRONTEND_URL, "http://localhost:5173"];  // Add your Vercel frontend URL in .env
+const allowedOrigins = [process.env.FRONTEND_URL, "http://localhost:5173", "https://gatorai-1.onrender.com"]; 
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
