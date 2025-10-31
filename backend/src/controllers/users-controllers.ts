@@ -31,8 +31,8 @@ export const userSignup = async (req: Request, res: Response, next: NextFunction
         res.clearCookie(COOKIE_NAME, {
             httpOnly: true,
             path: "/",
-            signed: true,
-            domain: "localhost",
+            sameSite: "none",
+            secure: true,
         });
 
         const token = createToken(user._id.toString(), user.email, "7d");
