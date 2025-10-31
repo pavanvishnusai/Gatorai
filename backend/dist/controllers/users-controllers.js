@@ -3,6 +3,7 @@ import User from "../models/User.js";
 import { createToken } from "../utils/token-manager.js";
 import { COOKIE_NAME } from "../utils/constants.js";
 import mongoose from "mongoose";
+// ✅ Get all users
 export const getAllUsers = async (req, res, next) => {
     try {
         const users = await User.find();
@@ -13,6 +14,7 @@ export const getAllUsers = async (req, res, next) => {
         return res.status(500).json({ message: "ERROR", cause: error.message });
     }
 };
+// ✅ Signup
 export const userSignup = async (req, res, next) => {
     try {
         const { name, email, password } = req.body;
@@ -23,29 +25,33 @@ export const userSignup = async (req, res, next) => {
         const hashedPassword = await hash(password, 10);
         const user = new User({ name, email, password: hashedPassword });
         await user.save();
+        // ✅ Clear any existing cookie first
         res.clearCookie(COOKIE_NAME, {
             httpOnly: true,
-            path: "/",
             sameSite: "none",
             secure: true,
+            path: "/",
         });
+        // ✅ Create JWT token
         const token = createToken(user._id.toString(), user.email, "7d");
         const expires = new Date();
         expires.setDate(expires.getDate() + 7);
+        // ✅ Set secure cookie (Render HTTPS)
         res.cookie(COOKIE_NAME, token, {
-            path: "/",
-            domain: "localhost",
-            expires,
             httpOnly: true,
-            signed: true,
+            sameSite: "none",
+            secure: true,
+            path: "/",
+            expires,
         });
-        return res.status(201).json({ message: "ok", name });
+        return res.status(201).json({ message: "ok", name: user.name });
     }
     catch (error) {
         console.log(error);
         return res.status(500).json({ message: "ERROR", cause: error.message });
     }
 };
+// ✅ Login
 export const userLogin = async (req, res, next) => {
     try {
         const { email, password } = req.body;
@@ -57,21 +63,24 @@ export const userLogin = async (req, res, next) => {
         if (!isPasswordCorrect) {
             return res.status(403).json({ message: "Incorrect password" });
         }
+        // ✅ Clear old cookie
         res.clearCookie(COOKIE_NAME, {
             httpOnly: true,
+            sameSite: "none",
+            secure: true,
             path: "/",
-            signed: true,
-            domain: "localhost",
         });
+        // ✅ Create new JWT token
         const token = createToken(user._id.toString(), user.email, "7d");
         const expires = new Date();
         expires.setDate(expires.getDate() + 7);
+        // ✅ Set secure cookie
         res.cookie(COOKIE_NAME, token, {
-            path: "/",
-            domain: "localhost",
-            expires,
             httpOnly: true,
-            signed: true,
+            sameSite: "none",
+            secure: true,
+            path: "/",
+            expires,
         });
         return res.status(200).json({ message: "ok", name: user.name, email: user.email });
     }
@@ -80,6 +89,7 @@ export const userLogin = async (req, res, next) => {
         return res.status(500).json({ message: "ERROR", cause: error.message });
     }
 };
+// ✅ Verify user (for /auth-status)
 export const verifyUser = async (req, res, next) => {
     try {
         const userId = res.locals.jwtData.id;
@@ -100,6 +110,7 @@ export const verifyUser = async (req, res, next) => {
         return res.status(500).json({ message: "ERROR", cause: error.message });
     }
 };
+// ✅ Logout
 export const userLogout = async (req, res, next) => {
     try {
         const userId = res.locals.jwtData.id;
@@ -113,11 +124,12 @@ export const userLogout = async (req, res, next) => {
         if (user._id.toString() !== userId) {
             return res.status(401).json({ message: "Permission didn't match" });
         }
+        // ✅ Clear secure cookie
         res.clearCookie(COOKIE_NAME, {
             httpOnly: true,
+            sameSite: "none",
+            secure: true,
             path: "/",
-            signed: true,
-            domain: "localhost",
         });
         return res.status(200).json({ message: "ok", name: user.name, email: user.email });
     }
