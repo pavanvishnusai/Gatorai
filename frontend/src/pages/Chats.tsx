@@ -8,7 +8,6 @@ import { deleteUserChats, getUserChats, sendChatRequest } from '../helpers/api-c
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
-
 type Message = {
   content: string;
   role: "user" | "assistant";
@@ -16,6 +15,7 @@ type Message = {
 const chats = () => {
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
   const auth = useAuth();
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
   const handleSubmit = async() => {
@@ -59,6 +59,12 @@ const chats = () => {
       navigate("/login");
     }
   }, [auth]);
+
+  useEffect(() => {
+  if (bottomRef.current) {
+    bottomRef.current.scrollIntoView({ behavior: "smooth" });
+  }
+}, [chatMessages]);
 
   return (
     <Box
@@ -132,23 +138,35 @@ const chats = () => {
        
           {chatMessages.map((chats, index) => (
             //@ts-ignore
-            <ChatItem content = {chats.content} role= {chats.role} key={index}/>))} 
+            <ChatItem content = {chats.content} role= {chats.role} key={index}/>))}
+            <div ref={bottomRef} /> {/* 👈 scroll anchor */} 
           </Box>
           <div style={{width: "100%", borderRadius:8, backgroundColor:"rgb(47, 47, 47)", display: "flex", margin: "auto", borderColor:'white'}}>
             {""}
-            <input 
-              ref={inputRef}
-              type="text" 
-              style={{
-                width: "100%",
-                backgroundColor: "transparent",
-                padding: "20px",
-                border: "none",
-                outline: "none",
-                color: "white",
-                fontSize: "20px",
-              }}/>
-              <IconButton onClick={handleSubmit} sx={{ml:"auto", color:"white", mx: 3}}><IoMdSend/></IconButton>
+            <input
+  ref={inputRef}
+  type="text"
+  placeholder="Type your message..."
+  onKeyDown={(e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSubmit();
+    }
+  }}
+  style={{
+    width: "100%",
+    backgroundColor: "transparent",
+    padding: "20px",
+    border: "none",
+    outline: "none",
+    color: "white",
+    fontSize: "20px",
+  }}
+/>
+<IconButton onClick={handleSubmit} sx={{ ml: "auto", color: "white", mx: 3 }}>
+  <IoMdSend />
+</IconButton>
+          
           </div>
         </Box>
     </Box>

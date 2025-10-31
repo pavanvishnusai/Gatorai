@@ -1,9 +1,15 @@
+import dotenv from "dotenv";
+dotenv.config();
 import { NextFunction, Response, Request } from "express";
 import User from "../models/User.js";
 import { OpenAI } from 'openai'
 import { ChatCompletionMessageParam } from "openai/resources/index.mjs"; 
 import mongoose from "mongoose";
 
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  defaultHeaders: {},
+});
 
 export const generateChatCompletion = async (req: Request, res: Response, next: NextFunction) => {
     const {message} = req.body;
@@ -15,10 +21,10 @@ export const generateChatCompletion = async (req: Request, res: Response, next: 
     chats.push({content: message, role: "user"});
     user.chats.push({content: message, role: "user"});
 
-    const openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-        organization: process.env.OPENAI_ORG_ID,
-    });
+    // const openai = new OpenAI({
+    //     apiKey: process.env.OPENAI_API_KEY,
+    //     // organization: process.env.OPENAI_ORG_ID,
+    // });
     const completion = await openai.chat.completions.create({
         model: "gpt-3.5-turbo",
         messages: chats,

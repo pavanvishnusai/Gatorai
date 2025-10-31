@@ -1,6 +1,12 @@
+import dotenv from "dotenv";
+dotenv.config();
 import User from "../models/User.js";
 import { OpenAI } from 'openai';
 import mongoose from "mongoose";
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    defaultHeaders: {},
+});
 export const generateChatCompletion = async (req, res, next) => {
     const { message } = req.body;
     try {
@@ -10,10 +16,10 @@ export const generateChatCompletion = async (req, res, next) => {
         const chats = user.chats.map(({ role, content }) => ({ role, content }));
         chats.push({ content: message, role: "user" });
         user.chats.push({ content: message, role: "user" });
-        const openai = new OpenAI({
-            apiKey: process.env.OPENAI_API_KEY,
-            organization: process.env.OPENAI_ORG_ID,
-        });
+        // const openai = new OpenAI({
+        //     apiKey: process.env.OPENAI_API_KEY,
+        //     // organization: process.env.OPENAI_ORG_ID,
+        // });
         const completion = await openai.chat.completions.create({
             model: "gpt-3.5-turbo",
             messages: chats,
