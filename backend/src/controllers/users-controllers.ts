@@ -174,13 +174,14 @@ import mongoose from "mongoose";
 // ✅ Detect environment (Render vs Local)
 const isProduction = process.env.NODE_ENV === "production";
 const sameSiteMode: "none" | "lax" = isProduction ? "none" : "lax";
-const secureFlag = isProduction; // true only in production (HTTPS)
+const secureFlag = isProduction;
 
 // ✅ Helper: Common cookie options
 const cookieOptions = {
   httpOnly: true,
   sameSite: sameSiteMode,
   secure: secureFlag,
+  domain: isProduction ? "gatorai.onrender.com" : undefined, // ✅ critical fix
   path: "/",
 };
 
@@ -209,14 +210,11 @@ export const userSignup = async (req: Request, res: Response, next: NextFunction
     const user = new User({ name, email, password: hashedPassword });
     await user.save();
 
-    // ✅ Clear existing cookie if any
     res.clearCookie(COOKIE_NAME, cookieOptions);
 
-    // ✅ Create JWT token
     const token = createToken(user._id.toString(), user.email, "7d");
-    const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    // ✅ Set cookie securely
     res.cookie(COOKIE_NAME, token, {
       ...cookieOptions,
       expires,
@@ -248,14 +246,11 @@ export const userLogin = async (req: Request, res: Response, next: NextFunction)
       return res.status(403).json({ message: "Incorrect password" });
     }
 
-    // ✅ Clear previous cookie if any
     res.clearCookie(COOKIE_NAME, cookieOptions);
 
-    // ✅ Create new token
     const token = createToken(user._id.toString(), user.email, "7d");
     const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    // ✅ Set secure cookie
     res.cookie(COOKIE_NAME, token, {
       ...cookieOptions,
       expires,
@@ -272,7 +267,7 @@ export const userLogin = async (req: Request, res: Response, next: NextFunction)
   }
 };
 
-// ✅ Verify user (for /auth-status)
+// ✅ Verify user
 export const verifyUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = res.locals.jwtData?.id;
@@ -300,7 +295,6 @@ export const verifyUser = async (req: Request, res: Response, next: NextFunction
 export const userLogout = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = res.locals.jwtData?.id;
-
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: "Invalid user ID" });
     }
@@ -310,9 +304,7 @@ export const userLogout = async (req: Request, res: Response, next: NextFunction
       return res.status(401).json({ message: "User not found or token invalid" });
     }
 
-    // ✅ Properly clear cookie
     res.clearCookie(COOKIE_NAME, cookieOptions);
-
     return res.status(200).json({ message: "Logout successful" });
   } catch (error: any) {
     console.error("Logout error:", error);
