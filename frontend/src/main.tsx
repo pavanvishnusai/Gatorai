@@ -8,8 +8,9 @@ import { AuthProvider } from "./contexts/AuthContext.tsx";
 import { Toaster } from "react-hot-toast";
 import axios from "axios";
 
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || "https://gatorai.onrender.com/api/v1";
 axios.defaults.withCredentials = true;
+
 
 const theme = createTheme({
   typography: {
