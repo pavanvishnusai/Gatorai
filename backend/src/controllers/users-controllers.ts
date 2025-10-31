@@ -1,4 +1,4 @@
-import { compare, hash } from "bcrypt";
+import { compare, hash } from "bcryptjs";
 import User from "../models/User.js";
 import { NextFunction, Request, Response } from "express";
 import { createToken } from "../utils/token-manager.js";
